@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Registro - MK Serviços Premium{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1><i class="fas fa-user-plus"></i> Criar Conta</h1>
+            <p>Preencha os dados para se registrar</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i> Nome de Usuário
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Digite seu nome de usuário">
+                <small class="form-text">Mínimo de 4 caracteres</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i> Email
+                </label>
+                <input type="email" id="email" name="email" required
+                       placeholder="seu@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i> Senha
+                </label>
+                <input type="password" id="password" name="password" required
+                       placeholder="Crie uma senha segura">
+                <div class="password-toggle">
+                    <i class="fas fa-eye" id="togglePassword"></i>
+                </div>
+                <small class="form-text">Mínimo de 6 caracteres</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">
+                    <i class="fas fa-lock"></i> Confirmar Senha
+                </label>
+                <input type="password" id="confirm_password" name="confirm_password" required
+                       placeholder="Repita sua senha">
+                <div class="password-toggle">
+                    <i class="fas fa-eye" id="toggleConfirmPassword"></i>
+                </div>
+            </div>
+
+            <div class="form-group form-check">
+                <input type="checkbox" id="terms" name="terms" class="form-check-input" required>
+                <label for="terms" class="form-check-label">
+                    Aceito os <a href="#" data-toggle="modal" data-target="#termsModal">Termos de Serviço</a>
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-user-plus"></i> Registrar
+            </button>
+
+            <div class="auth-footer">
+                <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login aqui</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Termos de Serviço -->
+<div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Termos de Serviço</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Texto dos termos de serviço aqui...</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mostrar/esconder senha
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#password');
+    
+    const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
+    const confirmPassword = document.querySelector('#confirm_password');
+    
+    if (togglePassword && password) {
+        togglePassword.addEventListener('click', function() {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+    
+    if (toggleConfirmPassword && confirmPassword) {
+        toggleConfirmPassword.addEventListener('click', function() {
+            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+            confirmPassword.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // Validação de senha em tempo real
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+    
+    if (passwordInput && confirmPasswordInput) {
+        confirmPasswordInput.addEventListener('input', function() {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                confirmPasswordInput.setCustomValidity('As senhas não coincidem');
+            } else {
+                confirmPasswordInput.setCustomValidity('');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

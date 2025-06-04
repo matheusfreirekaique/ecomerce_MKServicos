@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Painel Admin{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1>Painel Administrativo</h1>
+    
+    <div class="admin-sections">
+        <div class="admin-card">
+            <h2>Usuários</h2>
+            <p>Total: {{ users|length }}</p>
+            <a href="{{ url_for('admin_users') }}" class="btn">Gerenciar</a>
+        </div>
+        
+        <div class="admin-card">
+            <h2>Produtos</h2>
+            <p>Total: {{ products|length }}</p>
+            <a href="{{ url_for('admin_products') }}" class="btn">Gerenciar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

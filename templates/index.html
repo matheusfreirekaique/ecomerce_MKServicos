@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Serviços Premium - Página Inicial{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <h1>Soluções Profissionais para seu Negócio</h1>
+            <p class="lead">Contrate os melhores serviços com qualidade garantida e preços competitivos</p>
+            
+            <div class="hero-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for(current_user.is_admin and 'admin_dashboard' or 'user_dashboard') }}" 
+                       class="btn btn-primary btn-lg">
+                       Acessar Painel
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Criar Conta</a>
+                    <a href="{{ url_for('login') }}" class="btn btn-secondary btn-lg">Login</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/hero-service.png') }}" 
+                 alt="Serviços Profissionais" 
+                 class="img-fluid">
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section class="features-section py-5">
+        <h2 class="text-center mb-5">Por que escolher nossos serviços?</h2>
+        <div class="features-grid">
+            {% for feature in [
+                {'icon': 'medal', 'title': 'Qualidade Garantida', 'desc': 'Prestadores verificados e avaliados'},
+                {'icon': 'hand-holding-usd', 'title': 'Preços Competitivos', 'desc': 'Melhor custo-benefício do mercado'},
+                {'icon': 'shield-alt', 'title': 'Segurança', 'desc': 'Processos protegidos em todas as transações'},
+                {'icon': 'headset', 'title': 'Suporte 24/7', 'desc': 'Equipe sempre disponível para ajudar'}
+            ] %}
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-{{ feature.icon }}"></i>
+                </div>
+                <h3>{{ feature.title }}</h3>
+                <p>{{ feature.desc }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Featured Products Section -->
+    {% if featured_products %}
+    <section class="products-section py-5">
+        <div class="section-header">
+            <h2>Serviços em Destaque</h2>
+            {% if current_user.is_authenticated and current_user.can_view_products %}
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-primary">Ver Todos</a>
+            {% endif %}
+        </div>
+        
+        <div class="products-grid">
+            {% for product in featured_products %}
+            <div class="product-card">
+                <div class="product-badge">Destaque</div>
+                <div class="product-header">
+                    <h3>{{ product.name }}</h3>
+                    <div class="product-price">R$ {{ "%.2f"|format(product.price) }}</div>
+                </div>
+                
+                <div class="product-description">
+                    <p>{{ product.description }}</p>
+                </div>
+                
+                <div class="product-actions">
+                    {% if current_user.is_authenticated and current_user.can_view_products %}
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-sm btn-primary">Contratar</a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="btn btn-sm btn-primary">Login para Contratar</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- CTA Section -->
+    <section class="cta-section py-5">
+        <div class="cta-content">
+            <h2>Pronto para transformar seu negócio?</h2>
+            <p class="lead">Cadastre-se agora e descubra como nossos serviços podem ajudar você</p>
+            
+            <div class="cta-actions">
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for(current_user.is_admin and 'admin_dashboard' or 'user_dashboard') }}" 
+                       class="btn btn-outline-light btn-lg">
+                       Acessar Painel
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">Começar Agora</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+    :root {
+        --primary: #2c3e50;
+        --secondary: #3498db;
+        --success: #27ae60;
+        --light: #f8f9fa;
+        --dark: #343a40;
+    }
+    
+    /* Hero Section */
+    .hero-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+        padding: 4rem 0;
+    }
+    
+    .hero-content h1 {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .hero-content .lead {
+        font-size: 1.25rem;
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+    
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .btn-primary {
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+    }
+    
+    .btn-secondary {
+        background-color: transparent;
+        border: 2px solid var(--secondary);
+        color: var(--secondary);
+    }
+    
+    .btn-secondary:hover {
+        background-color: var(--secondary);
+        color: white;
+    }
+    
+    .hero-image img {
+        width: 100%;
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Features Section */
+    .features-section {
+        background-color: var(--light);
+    }
+    
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+    
+    .feature-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-0.5rem);
+    }
+    
+    .feature-icon {
+        font-size: 2.5rem;
+        color: var(--secondary);
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Products Section */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .product-card {
+        background: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .product-price {
+        color: var(--success);
+        font-weight: 700;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background-color: var(--light);
+        color: black;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .hero-section {
+            grid-template-columns: 1fr;
+            text-align: center;
+        }
+        
+        .hero-actions {
+            justify-content: center;
+        }
+        
+        .hero-image {
+            order: -1;
+        }
+    }
+</style>
+{% endblock %}

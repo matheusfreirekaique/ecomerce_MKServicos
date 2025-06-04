@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Gerenciar Usuários - Admin{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-users-cog"></i> Gerenciar Usuários</h1>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Voltar ao Painel
+        </a>
+    </div>
+
+    <div class="admin-content">
+        <div class="admin-card">
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Ver Produtos</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_admin %}
+                                    <span class="badge bg-primary">Admin</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Usuário</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.can_view_products %}
+                                    <span class="badge bg-success">Sim</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Não</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-cell">
+                                <form method="POST" action="{{ url_for('make_admin', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm {% if user.is_admin %}btn-warning{% else %}btn-success{% endif %}"
+                                            onclick="return confirm('{% if user.is_admin %}Remover{% else %}Conceder{% endif %} privilégios de admin para {{ user.username }}?')">
+                                        <i class="fas fa-user-shield"></i> {% if user.is_admin %}Remover Admin{% else %}Tornar Admin{% endif %}
+                                    </button>
+                                </form>
+                                
+                                <form method="POST" action="{{ url_for('toggle_view_products', user_id=user.id) }}" style="display: inline;">
+                                    <button type="submit" class="btn btn-sm {% if user.can_view_products %}btn-secondary{% else %}btn-info{% endif %}"
+                                            onclick="return confirm('{% if user.can_view_products %}Bloquear{% else %}Permitir{% endif %} acesso aos produtos para {{ user.username }}?')">
+                                        <i class="fas fa-eye"></i> {% if user.can_view_products %}Bloquear{% else %}Permitir{% endif %} Visualização
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos específicos para a página de usuários */
+    .admin-table th:nth-child(1) { width: 5%; }
+    .admin-table th:nth-child(4), 
+    .admin-table th:nth-child(5) { width: 10%; }
+    .admin-table th:nth-child(6) { width: 25%; }
+    
+    .badge {
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+        font-weight: 500;
+        border-radius: 50rem;
+        color: white;
+    }
+    
+    .bg-primary { background-color: var(--primary-color); }
+    .bg-secondary { background-color: var(--text-light); }
+    .bg-success { background-color: var(--success-color); }
+    .bg-danger { background-color: var(--danger-color); }
+    
+    .actions-cell {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    
+    @media (max-width: 768px) {
+        .actions-cell {
+            flex-direction: column;
+        }
+        
+        .actions-cell form {
+            width: 100%;
+        }
+        
+        .actions-cell button {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
