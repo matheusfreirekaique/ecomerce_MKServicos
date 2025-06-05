@@ -1,9 +1,9 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
-import os
 import secrets
 from datetime import datetime, timedelta
 from functools import wraps
@@ -12,18 +12,14 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 # Configurações do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tmp/test.db'  # Para SQLite
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Configurações de email (para recuperação de senha)
-app.config['MAIL_SERVER'] = 'smtp.example.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True  # Para portas 587
-app.config['MAIL_USE_SSL'] = True  # Para portas 465
-app.config['MAIL_USERNAME'] = 'your-email@example.com'
-app.config['MAIL_PASSWORD'] = 'your-email-password'
-app.config['MAIL_DEFAULT_SENDER'] = 'no-reply@example.com'
-app.config['SECRET_KEY'] = 'sua-chave-secreta-aqui'  # Importante para tokens de segurança
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tmp/test.db')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', app.config.get('SECRET_KEY', secrets.token_hex(32)))
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', app.config.get('MAIL_USERNAME'))
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', app.config.get('MAIL_PASSWORD'))
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -401,5 +397,5 @@ if __name__ == '__main__':
             )
             db.session.add(admin)
             db.session.commit()
-    
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
