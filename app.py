@@ -11,16 +11,32 @@ from functools import wraps
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
-# Configurações do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///tmp/test.db'  # Para SQLite
+# Configurações do banco de dados (CORRIGIDO)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL', 
+    'postgresql://mkservicos_user:lz0C7OU9LQWUcZ4GmI3HqF7A7CihRAbr@dpg-d11kpg49c44c73fekrkg-a/mkservicos'
+).replace('postgres://', 'postgresql://')  # Garante o formato correto
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300
+}
 
-# Configurações de email (para recuperação de senha)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tmp/test.db')
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', app.config.get('SECRET_KEY', secrets.token_hex(32)))
-app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', app.config.get('MAIL_USERNAME'))
-app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', app.config.get('MAIL_PASSWORD'))
+# Configurações de segurança (CORRETO)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
+# Configurações de email (CORRETO)
+app.config.update(
+    MAIL_SERVER='smtp.example.com',
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.environ.get('MAIL_USERNAME'),
+    MAIL_PASSWORD=os.environ.get('MAIL_PASSWORD'),
+    MAIL_DEFAULT_SENDER=os.environ.get('MAIL_DEFAULT_SENDER', 'no-reply@example.com')
+)
+
+# Inicialização das extensões (CORRETO)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
