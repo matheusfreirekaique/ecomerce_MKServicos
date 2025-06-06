@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 
 # Configurações do banco de dados (CORRIGIDO)
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://mkservicos_user:lz0C7OU9LQWUcZ4GmI3HqF7A7CihRAbr@dpg-d11kpg49c44c73fekrkg-a.oregon-postgres.render.com/mkservicos').replace('postgres://', 'postgresql://')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']  # Sem fallback!
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
