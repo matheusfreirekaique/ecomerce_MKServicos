@@ -7,6 +7,9 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 import secrets
 from datetime import datetime, timedelta
 from functools import wraps
+import click
+from flask import cli
+
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -45,6 +48,9 @@ login_manager.login_view = 'login'
 
 # Modelos do banco de dados (mantidos como estavam)
 class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+    __table_args__ = {'schema': 'public'}
+    
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -55,11 +61,14 @@ class User(UserMixin, db.Model):
     reset_token_expires = db.Column(db.DateTime)
 
 class Product(db.Model):
+    __tablename__ = 'products'
+    __table_args__ = {'schema': 'public'}
+    
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Atualizado
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     creator = db.relationship('User', backref='products', lazy=True)
