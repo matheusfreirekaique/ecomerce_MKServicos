@@ -16,9 +16,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']  # Sem fallba
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True,
-    'pool_recycle': 300
+    'pool_recycle': 300,
+    'connect_args': {
+        'sslmode': 'require'  # Adiciona SSL obrigatório
+    }
 }
-
 # Configurações de segurança (CORRETO)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 
@@ -77,6 +79,16 @@ def admin_required(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return decorated_function
+
+@app.before_first_request
+def check_db():
+    try:
+        db.session.execute("SELECT 1")
+        print("✅ Conexão com o PostgreSQL estabelecida!")
+    except Exception as e:
+        print(f"❌ Falha na conexão: {str(e)}")
+        raise
+
 
 # ==============================================
 # NOVAS FUNÇÕES PARA RECUPERAÇÃO DE SENHA
