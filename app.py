@@ -48,7 +48,7 @@ login_manager.login_view = 'login'
 
 # Modelos do banco de dados (mantidos como estavam)
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'
+    __tablename__ = 'users'
     __table_args__ = {'schema': 'public'}
     
     id = db.Column(db.Integer, primary_key=True)
@@ -61,13 +61,13 @@ class User(UserMixin, db.Model):
     reset_token_expires = db.Column(db.DateTime)
 
 class Product(db.Model):
-    __tablename__ = 'product'
+    __tablename__ = 'products'
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))  # Corrigido para 'users.id'
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Corrigido para 'users.id'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     creator = db.relationship('User', backref='products', lazy=True)
