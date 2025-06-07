@@ -62,13 +62,12 @@ class User(UserMixin, db.Model):
 
 class Product(db.Model):
     __tablename__ = 'products'
-    __table_args__ = {'schema': 'public'}
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     price = db.Column(db.Float, nullable=False)
-    created_by = db.Column(db.Integer, db.ForeignKey('user.id'))  # Atualizado
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Corrigido para 'users.id'
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     creator = db.relationship('User', backref='products', lazy=True)
