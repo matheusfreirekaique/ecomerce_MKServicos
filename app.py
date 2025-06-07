@@ -113,6 +113,18 @@ def init_db_command():
         raise
 
 
+with app.app_context():
+    try:
+        db.create_all()
+        if not User.query.filter_by(username='admin').first():
+            admin = User(username='admin', email='admin@example.com',
+                        password=bcrypt.generate_password_hash('admin123').decode('utf-8'),
+                        is_admin=True)
+            db.session.add(admin)
+            db.session.commit()
+    except Exception as e:
+        print(f"⚠️ Erro na inicialização: {str(e)}")
+
 # ==============================================
 # NOVAS FUNÇÕES PARA RECUPERAÇÃO DE SENHA
 # ==============================================
