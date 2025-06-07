@@ -80,14 +80,21 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.before_first_request
-def check_db():
-    try:
-        db.session.execute("SELECT 1")
-        print("✅ Conexão com o PostgreSQL estabelecida!")
-    except Exception as e:
-        print(f"❌ Falha na conexão: {str(e)}")
-        raise
+@app.cli.command("init-db")
+def init_db():
+    """Comando CLI para inicializar o banco"""
+    db.create_all()
+    # Cria admin padrão se não existir
+    if not User.query.filter_by(username='admin').first():
+        admin = User(
+            username='admin',
+            email='admin@example.com',
+            password=bcrypt.generate_password_hash('admin123').decode('utf-8'),
+            is_admin=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+    print("✅ Banco de dados inicializado!")
 
 
 # ==============================================
