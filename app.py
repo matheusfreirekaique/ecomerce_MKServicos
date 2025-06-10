@@ -106,6 +106,7 @@ class Order(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('public.users.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('public.products.id'))
     amount = db.Column(db.Float, nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
     status = db.Column(db.String(20), default='pending')
@@ -113,6 +114,7 @@ class Order(db.Model):
     transaction_id = db.Column(db.String(100))
     
     user = db.relationship('User', backref='orders', lazy=True)
+    product = db.relationship('Product', backref='orders', lazy=True) 
 
     
 
