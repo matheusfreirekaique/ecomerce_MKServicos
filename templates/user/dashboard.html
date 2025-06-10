@@ -27,7 +27,7 @@
                     </div>
                     
                     <div class="product-actions">
-                        <button class="btn btn-contract">Contratar</button>
+                        <button class="btn btn-contract"onclick="window.location.href='{{ url_for('checkout', product_id=product.id) }}'">Contratar</button>
                         <span class="product-added">Adicionado em: {{ product.created_at.strftime('%d/%m/%Y') }}</span>
                     </div>
                 </div>
