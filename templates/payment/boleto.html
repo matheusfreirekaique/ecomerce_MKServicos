@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4>Boleto Bancário</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5>Pedido #{{ order.id }}</h5>
+                    <p>Valor: R$ {{ "%.2f"|format(order.amount) }}</p>
+                    <p>Vencimento: {{ (datetime.utcnow() + timedelta(days=3)).strftime('%d/%m/%Y') }}</p>
+                    
+                    <div class="mt-4 mb-4">
+                        <a href="{{ boleto_url }}" class="btn btn-primary" target="_blank">
+                            Imprimir Boleto
+                        </a>
+                    </div>
+                    
+                    <p class="text-muted">
+                        O boleto pode levar até 3 dias úteis para ser compensado.
+                        Enviamos uma cópia para o e-mail cadastrado.
+                    </p>
+                    
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                        Voltar ao Painel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

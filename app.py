@@ -9,7 +9,9 @@ from datetime import datetime, timedelta
 from functools import wraps
 from flask.cli import with_appcontext
 import click
-
+from flask_wtf import FlaskForm # type: ignore
+from wtforms import StringField, SelectField, validators # type: ignore
+from datetime import datetime
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -71,7 +73,47 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     creator = db.relationship('User', backref='products', lazy=True)
+
+# NOVAS CLASSES PARA PAGAMENTO
     
+class PaymentForm(FlaskForm):
+    """Formulário de pagamento"""
+    payment_method = SelectField('Método de Pagamento', choices=[
+        ('credit_card', 'Cartão de Crédito'),
+        ('boleto', 'Boleto Bancário'),
+        ('pix', 'PIX')
+    ], validators=[validators.InputRequired()])
+    
+    # Campos para cartão de crédito
+    card_number = StringField('Número do Cartão', validators=[
+        validators.Optional(),
+        validators.Length(min=16, max=16, message="Número inválido")
+    ])
+    card_name = StringField('Nome no Cartão', validators=[validators.Optional()])
+    card_expiry = StringField('Validade (MM/AA)', validators=[
+        validators.Optional(),
+        validators.Regexp(r'^\d{2}/\d{2}$', message="Formato inválido")
+    ])
+    card_cvv = StringField('CVV', validators=[
+        validators.Optional(),
+        validators.Length(min=3, max=4, message="Código inválido")
+    ])
+
+class Order(db.Model):
+    """Modelo para armazenar pedidos"""
+    __tablename__ = 'orders'
+    __table_args__ = {'schema': 'public'}
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('public.users.id'))
+    amount = db.Column(db.Float, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(20), default='pending')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    transaction_id = db.Column(db.String(100))
+    
+    user = db.relationship('User', backref='orders', lazy=True)
+
     
 
 @login_manager.user_loader
@@ -438,6 +480,113 @@ def edit_product(id):
     
     return render_template('admin/edit_product.html', product=product)
 
+# ROTAS DE PAGAMENTO
+@app.route('/checkout/<int:product_id>', methods=['GET', 'POST'])
+@login_required
+def checkout(product_id):
+    """Rota para processar pagamentos com produto específico"""
+    product = Product.query.get_or_404(product_id)  # Obtém o produto ou retorna 404
+    form = PaymentForm()
+    
+    # Define o amount com base no produto
+    amount = product.price
+    
+    if form.validate_on_submit():
+        try:
+            new_order = Order(
+                user_id=current_user.id,
+                product_id=product.id,  # Adicione este campo se quiser registrar qual produto foi comprado
+                amount=amount,
+                payment_method=form.payment_method.data,
+                status='processing',
+                transaction_id=f"TXN{secrets.token_hex(8).upper()}"
+            )
+            
+            db.session.add(new_order)
+            db.session.commit()
+            
+            if form.payment_method.data == 'credit_card':
+                return redirect(url_for('payment_success', order_id=new_order.id))
+            elif form.payment_method.data == 'boleto':
+                boleto_url = url_for('generate_boleto', order_id=new_order.id, _external=True)
+                return render_template('payment/boleto.html', 
+                                    boleto_url=boleto_url,
+                                    order=new_order,
+                                    product=product)  # Adicione o produto aqui
+            elif form.payment_method.data == 'pix':
+                pix_code = f"00020126580014BR.GOV.BCB.PIX0136{secrets.token_hex(22)}5204000053039865405{amount:.2f}5802BR5925EMPRESA EXEMPLO6008BRASILIA62070503***6304"
+                return render_template('payment/pix.html',
+                                    pix_code=pix_code,
+                                    order=new_order,
+                                    product=product)  # Adicione o produto aqui
+                
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Erro ao processar pagamento: {str(e)}', 'danger')
+            app.logger.error(f'Payment error: {str(e)}')
+    
+    return render_template('payment/checkout.html', 
+                         form=form,
+                         amount=amount,
+                         product=product)  
+    
+@app.route('/payment/success/<int:order_id>')
+@login_required
+def payment_success(order_id):
+    """Rota de confirmação de pagamento"""
+    order = Order.query.get_or_404(order_id)
+    
+    # Verificar se o pedido pertence ao usuário atual
+    if order.user_id != current_user.id:
+        flash('Acesso não autorizado', 'danger')
+        return redirect(url_for('index'))
+    
+    # Atualizar status (em um sistema real, isso viria do gateway)
+    order.status = 'completed'
+    db.session.commit()
+    
+    # Enviar e-mail de confirmação (simulado)
+    try:
+        msg = Message(
+            '✅ Pagamento Confirmado',
+            recipients=[current_user.email],
+            sender=app.config['MAIL_DEFAULT_SENDER']
+        )
+        msg.body = f'''Olá {current_user.username},
+
+Seu pagamento no valor de R$ {order.amount:.2f} foi confirmado!
+Método: {order.payment_method.replace('_', ' ').title()}
+ID da Transação: {order.transaction_id}
+
+Agradecemos pela sua compra!
+'''
+        mail.send(msg)
+    except Exception as e:
+        app.logger.error(f'Error sending confirmation email: {str(e)}')
+    
+    return render_template('payment/success.html', order=order)
+
+@app.route('/boleto/<int:order_id>')
+@login_required
+def generate_boleto(order_id):
+    """Rota para gerar boleto fictício (em produção, integrar com API real)"""
+    order = Order.query.get_or_404(order_id)
+    
+    if order.user_id != current_user.id:
+        flash('Acesso não autorizado', 'danger')
+        return redirect(url_for('index'))
+    
+    # Dados fictícios do boleto
+    boleto_data = {
+        'codigo_barras': f'34191.11111 11111.111111 11111.111111 1 999900000{order.amount:.2f}',
+        'linha_digitavel': f'34191.11111 11111.111111 11111.111111 1 999900000{order.amount:.2f}',
+        'vencimento': (datetime.utcnow() + timedelta(days=3)).strftime('%d/%m/%Y'),
+        'valor': f'R$ {order.amount:.2f}',
+        'beneficiario': 'Empresa Exemplo Ltda',
+        'documento': order.transaction_id
+    }
+    
+    return render_template('payment/boleto_pdf.html', boleto=boleto_data)
 
 # ... (mantenha quaisquer outras rotas que você já tinha)
 

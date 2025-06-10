@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Finalizar Compra</h2>
+    <div class="row">
+        <!-- Coluna do Produto -->
+        <div class="col-md-5 mb-4">
+            <div class="card product-summary">
+                <div class="card-header bg-info text-white">
+                    <h4>Detalhes do Produto</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="product-title">{{ product.name }}</h5>
+                    <p class="product-description">{{ product.description }}</p>
+                    <div class="product-price-container">
+                        <span class="product-price-label">Valor:</span>
+                        <span class="product-price">R$ {{ "%.2f"|format(product.price) }}</span>
+                    </div>
+                    <div class="product-meta">
+                        <small class="text-muted">Código: #{{ product.id }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna do Pagamento -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>Pagamento</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="form-group">
+                            {{ form.payment_method.label }}
+                            {{ form.payment_method(class="form-control") }}
+                        </div>
+                        
+                        <!-- Campos condicionais para cartão -->
+                        <div id="credit-card-fields" {% if form.payment_method.data != 'credit_card' %}style="display:none;"{% endif %}>
+                            <div class="form-group">
+                                {{ form.card_number.label }}
+                                {{ form.card_number(class="form-control", placeholder="0000 0000 0000 0000") }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.card_name.label }}
+                                {{ form.card_name(class="form-control", placeholder="Nome como no cartão") }}
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.card_expiry.label }}
+                                        {{ form.card_expiry(class="form-control", placeholder="MM/AA") }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ form.card_cvv.label }}
+                                        {{ form.card_cvv(class="form-control", placeholder="123") }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-summary mt-4">
+                            <h5>Total a Pagar: <span class="total-amount">R$ {{ "%.2f"|format(amount) }}</span></h5>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success btn-block mt-3 btn-confirm">
+                            <i class="fas fa-lock"></i> Confirmar Pagamento
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para a seção do produto */
+    .product-summary {
+        height: 100%;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .product-title {
+        color: #2c3e50;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+    
+    .product-description {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+    
+    .product-price-container {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 6px;
+        margin: 20px 0;
+    }
+    
+    .product-price-label {
+        font-weight: 500;
+        color: #7f8c8d;
+    }
+    
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #27ae60;
+        float: right;
+    }
+    
+    .product-meta {
+        border-top: 1px solid #eee;
+        padding-top: 10px;
+        margin-top: 15px;
+    }
+    
+    /* Estilos para a seção de pagamento */
+    .payment-summary {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+    }
+    
+    .total-amount {
+        color: #e74c3c;
+        font-weight: 700;
+    }
+    
+    .btn-confirm {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        padding: 12px;
+        font-size: 1.1rem;
+    }
+    
+    .btn-confirm i {
+        margin-right: 8px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .col-md-5, .col-md-7 {
+            width: 100%;
+        }
+        
+        .product-summary {
+            margin-bottom: 30px;
+        }
+        
+        .product-price {
+            font-size: 1.3rem;
+        }
+    }
+</style>
+
+<script>
+// Mostra/oculta campos de cartão conforme método selecionado
+document.getElementById('payment_method').addEventListener('change', function() {
+    const cardFields = document.getElementById('credit-card-fields');
+    if (this.value === 'credit_card') {
+        cardFields.style.display = 'block';
+    } else {
+        cardFields.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

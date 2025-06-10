@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>Pagamento via PIX</h4>
+                </div>
+                <div class="card-body text-center">
+                    <h5>Pedido #{{ order.id }}</h5>
+                    <p>Valor: R$ {{ "%.2f"|format(order.amount) }}</p>
+                    
+                    <div class="mt-4 mb-4">
+                        <!-- Em produção, gerar QR code real com a lib qrcode -->
+                        <div class="p-3 border rounded d-inline-block bg-white">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ pix_code }}" 
+                                 alt="QR Code PIX" class="img-fluid">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" value="{{ pix_code }}" id="pixCode" readonly>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyPixCode()">
+                                Copiar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-muted">
+                        O pagamento é confirmado automaticamente em até 2 minutos.
+                    </p>
+                    
+                    <a href="{{ url_for('user_dashboard') }}" class="btn btn-secondary">
+                        Voltar ao Painel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyPixCode() {
+    const copyText = document.getElementById("pixCode");
+    copyText.select();
+    document.execCommand("copy");
+    alert("Código PIX copiado!");
+}
+</script>
+{% endblock %}

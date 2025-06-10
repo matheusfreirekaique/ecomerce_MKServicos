@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4>✅ Pagamento Confirmado</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-5x text-success mb-4"></i>
+                    <h5>Obrigado por sua compra!</h5>
+                    <p>ID do Pedido: {{ order.id }}</p>
+                    <p>Valor: R$ {{ "%.2f"|format(order.amount) }}</p>
+                    <p>Método: {{ order.payment_method.replace('_', ' ').title() }}</p>
+                    <p>Transação: {{ order.transaction_id }}</p>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('user_dashboard') }}" class="btn btn-primary">
+                            Acessar Serviço
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
